@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NDA AI Mock Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI';
+  background: #0b0c10;
+  color: white;
+}
+
+/* Landing */
+.landing {
+  height: 100vh;
+  background: linear-gradient(135deg,#000428,#004e92);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
+
+.landing h1 {
+  font-size: 40px;
+  color:#66fcf1;
+}
+
+.btn {
+  padding: 12px 25px;
+  margin:10px;
+  border:none;
+  background:#45a29e;
+  color:white;
+  cursor:pointer;
+  border-radius:10px;
+  transition:0.3s;
+}
+.btn:hover { background:#66fcf1; color:black; }
+
+/* Dashboard */
+#dashboard { display:none; padding:20px; }
+
+.card {
+  background:#1f2833;
+  padding:15px;
+  margin:10px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.card:hover { background:#45a29e; }
+
+/* Test UI */
+#testUI { display:none; padding:20px; }
+
+.question {
+  font-size:18px;
+  margin-bottom:15px;
+}
+
+.option {
+  margin:8px 0;
+}
+
+.timer {
+  position:fixed;
+  top:10px;
+  right:10px;
+  background:red;
+  padding:10px;
+  border-radius:8px;
+}
+
+/* Result */
+#result { display:none; padding:20px; }
+
+</style>
+</head>
+
+<body>
+
+<!-- Landing -->
+<div class="landing" id="landing">
+  <h1>NDA AI MOCK TEST</h1>
+  <p>Train Like a Soldier. Think Like an Officer.</p>
+  <button class="btn" onclick="start()">Start Practice</button>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+  <h2>Select Topic</h2>
+  <div id="topics"></div>
+</div>
+
+<!-- Test UI -->
+<div id="testUI">
+  <div class="timer" id="timer">120:00</div>
+  <div id="qBox"></div>
+  <button class="btn" onclick="nextQ()">Next</button>
+</div>
+
+<!-- Result -->
+<div id="result">
+  <h2>Result</h2>
+  <p id="score"></p>
+  <h3>Wrong Questions</h3>
+  <div id="wrong"></div>
+</div>
+
+<script>
+
+/* TOPICS */
+const topics = [
+"Sets","Relations","Trigonometry","Matrices","Probability"
+];
+
+/* SAMPLE QUESTIONS (expand later) */
+const questionBank = {
+"Sets":[
+{
+q:"If A={1,2,3}, number of subsets?",
+options:["6","8","3","9"],
+answer:1
+},
+{
+q:"A∩B means?",
+options:["Union","Intersection","Difference","Subset"],
+answer:1
+}
+]
+};
+
+/* GLOBALS */
+let currentTopic = "";
+let qIndex = 0;
+let score = 0;
+let wrongList = [];
+let time = 7200; // 2 hours
+
+function start(){
+  landing.style.display="none";
+  dashboard.style.display="block";
+
+  topics.forEach(t=>{
+    let div = document.createElement("div");
+    div.className="card";
+    div.innerText=t;
+    div.onclick=()=>openTest(t);
+    topics.appendChild(div);
+  });
+}
+
+function openTest(topic){
+  currentTopic=topic;
+  dashboard.style.display="none";
+  testUI.style.display="block";
+  loadQ();
+  startTimer();
+}
+
+function loadQ(){
+  let q = questionBank[currentTopic][qIndex];
+
+  qBox.innerHTML = `
+    <div class="question">${q.q}</div>
+    ${q.options.map((opt,i)=>
+      `<div class="option">
+        <input type="radio" name="opt" value="${i}"> ${opt}
+      </div>`
+    ).join("")}
+  `;
+}
+
+function nextQ(){
+  let selected = document.querySelector('input[name="opt"]:checked');
+  let q = questionBank[currentTopic][qIndex];
+
+  if(selected){
+    if(parseInt(selected.value) === q.answer){
+      score+=4;
+    } else {
+      score-=1;
+      wrongList.push(q.q);
+    }
+  }
+
+  qIndex++;
+
+  if(qIndex < questionBank[currentTopic].length){
+    loadQ();
+  } else {
+    finish();
+  }
+}
+
+function startTimer(){
+  let interval = setInterval(()=>{
+    time--;
+    let min = Math.floor(time/60);
+    let sec = time%60;
+    timer.innerText = `${min}:${sec}`;
+
+    if(time<=0){
+      clearInterval(interval);
+      finish();
+    }
+  },1000);
+}
+
+function finish(){
+  testUI.style.display="none";
+  result.style.display="block";
+
+  score.innerText = "Score: " + score;
+
+  wrong.innerHTML = wrongList.join("<br>");
+}
+
+</script>
+
+</body>
+  </html>
